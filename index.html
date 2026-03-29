@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADSBWho - Your Personal Sky Radar</title>
+    <meta name="description" content="Track every plane overhead in real time. ADS-B radar, spotting log, AR sky view, moon transit alerts & Live Activity — coming soon to iOS.">
+    <meta property="og:title" content="ADSBWho - Your Personal Sky Radar">
+    <meta property="og:description" content="Real-time aircraft tracking with ADS-B radar, AR sky view, spotting log, moon transit predictions & Live Activity.">
+    <meta property="og:image" content="images/01_map.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="apple-touch-icon" href="images/appicon.png">
+    <link rel="icon" type="image/png" href="images/appicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2035;
+            --text-primary: #f0f4ff;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #22d3ee;
+            --accent-blue: #3b82f6;
+            --accent-green: #34d399;
+            --gradient-start: #0f172a;
+            --gradient-end: #1e1b4b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Animated background */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-glow::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(34, 211, 238, 0.06) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 60%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 80%, rgba(52, 211, 153, 0.03) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgFloat {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-2%, -2%) rotate(3deg); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 1rem 2rem;
+            background: rgba(10, 14, 26, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .nav-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .nav-brand span {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 2rem 4rem;
+        }
+
+        .hero-inner {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-text {
+            max-width: 560px;
+        }
+
+        .coming-soon-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 100px;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .coming-soon-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: var(--bg-primary);
+            padding: 0.9rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(34, 211, 238, 0.3);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            padding: 0.9rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .hero-screenshots {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-phone {
+            width: 280px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                        0 0 80px rgba(34, 211, 238, 0.1);
+            transform: perspective(1000px) rotateY(-5deg);
+            transition: transform 0.5s;
+        }
+
+        .hero-phone:hover {
+            transform: perspective(1000px) rotateY(0deg);
+        }
+
+        .hero-phone-back {
+            position: absolute;
+            width: 240px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            right: 0;
+            top: 60px;
+            opacity: 0.7;
+            transform: perspective(1000px) rotateY(-8deg) translateX(20px);
+        }
+
+        /* Section styling */
+        section {
+            position: relative;
+            z-index: 1;
+            padding: 6rem 2rem;
+        }
+
+        .section-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Features grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(34, 211, 238, 0.2);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .feature-icon.cyan { background: rgba(34, 211, 238, 0.15); }
+        .feature-icon.blue { background: rgba(59, 130, 246, 0.15); }
+        .feature-icon.green { background: rgba(52, 211, 153, 0.15); }
+        .feature-icon.purple { background: rgba(168, 85, 247, 0.15); }
+        .feature-icon.amber { background: rgba(251, 191, 36, 0.15); }
+        .feature-icon.rose { background: rgba(251, 113, 133, 0.15); }
+
+        .feature-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* Screenshot showcase */
+        .showcase {
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
+        }
+
+        .showcase-scroll {
+            display: flex;
+            gap: 2rem;
+            overflow-x: auto;
+            padding: 2rem 0;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .showcase-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .showcase-item {
+            flex: 0 0 auto;
+            scroll-snap-align: center;
+            text-align: center;
+        }
+
+        .showcase-item img {
+            width: 260px;
+            border-radius: 20px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s;
+        }
+
+        .showcase-item img:hover {
+            transform: scale(1.03);
+        }
+
+        .showcase-item p {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Local receiver section */
+        .local-section {
+            background: var(--bg-secondary);
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .local-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .local-text h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 1.25rem;
+        }
+
+        .local-text p {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .local-benefits {
+            list-style: none;
+            margin-top: 1.5rem;
+        }
+
+        .local-benefits li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .local-benefits .check {
+            color: var(--accent-green);
+            font-size: 1.1rem;
+        }
+
+        .local-image {
+            display: flex;
+            justify-content: center;
+        }
+
+        .local-image img {
+            width: 300px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        /* CTA section */
+        .cta-section {
+            text-align: center;
+            padding: 8rem 2rem;
+        }
+
+        .cta-section h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cta-section p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Footer */
+        footer {
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 3rem 2rem;
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-brand img {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+        }
+
+        .footer-brand span {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .footer-copy {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .hero-inner {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 3rem;
+            }
+
+            .hero-text {
+                max-width: 100%;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-cta {
+                justify-content: center;
+            }
+
+            .hero-phone {
+                width: 240px;
+            }
+
+            .hero-phone-back {
+                width: 200px;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .local-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .local-image {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .cta-section h2 {
+                font-size: 2rem;
+            }
+
+            .local-text h2 {
+                font-size: 1.8rem;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-inner">
+            <a href="#" class="nav-brand">
+                <img src="images/appicon.png" alt="ADSBWho" class="nav-icon">
+                <span>ADSBWho</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#screenshots">Screenshots</a></li>
+                <li><a href="#local">Local Receiver</a></li>
+                <li><a href="#privacy">Privacy</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-text">
+                <div class="coming-soon-badge">
+                    <span class="dot"></span>
+                    Coming Soon to iOS
+                </div>
+                <h1>Your Personal Sky Radar</h1>
+                <p>Track every aircraft overhead in real time. Connect to your own ADS-B receiver, explore the sky in augmented reality, and never miss a plane again.</p>
+                <div class="hero-cta">
+                    <a href="#notify" class="btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        Notify Me
+                    </a>
+                    <a href="#features" class="btn-secondary">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-screenshots">
+                <img src="images/02_detail.png" alt="ADSBWho aircraft detail" class="hero-phone-back">
+                <img src="images/01_map.png" alt="ADSBWho live map" class="hero-phone">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features">
+        <div class="section-inner">
+            <div class="section-header fade-in">
+                <h2>Everything You Need to Track the Sky</h2>
+                <p>Packed with features for aviation enthusiasts, plane spotters, and the curious.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon cyan">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <h3>Live Aircraft Radar</h3>
+                    <p>Watch planes appear on your map in real time with callsigns, altitudes, speeds, aircraft types, and registrations.</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon purple">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    </div>
+                    <h3>Augmented Reality</h3>
+                    <p>Point your phone at the sky and see aircraft labels overlaid in AR. Identify flights instantly right where you're looking.</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon green">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <h3>Spotting Log</h3>
+                    <p>Every aircraft is automatically logged with registration, callsign history, route history, and timestamps. Filter by date range.</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon amber">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </div>
+                    <h3>Moon Transit Predictions</h3>
+                    <p>Get notified when an aircraft is about to pass in front of the moon from your location. A feature you won't find anywhere else.</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon blue">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <h3>Live Activity & Dynamic Island</h3>
+                    <p>Monitor aircraft counts, nearest flight, and distance right from your lock screen — without opening the app.</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon rose">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    </div>
+                    <h3>Smart Notifications</h3>
+                    <p>Proximity alerts with altitude, distance, and compass direction. Towers and duplicates are automatically filtered out.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots -->
+    <section id="screenshots" class="showcase">
+        <div class="section-inner">
+            <div class="section-header fade-in">
+                <h2>See It in Action</h2>
+                <p>Designed for iOS with a clean, dark interface built for day and night spotting.</p>
+            </div>
+            <div class="showcase-scroll">
+                <div class="showcase-item">
+                    <img src="images/01_map.png" alt="Live aircraft map">
+                    <p>Live Map</p>
+                </div>
+                <div class="showcase-item">
+                    <img src="images/02_detail.png" alt="Aircraft detail view">
+                    <p>Aircraft Details</p>
+                </div>
+                <div class="showcase-item">
+                    <img src="images/03_spotting_log.png" alt="Spotting log">
+                    <p>Spotting Log</p>
+                </div>
+                <div class="showcase-item">
+                    <img src="images/06_live_activity.png" alt="Live Activity widget">
+                    <p>Live Activity</p>
+                </div>
+                <div class="showcase-item">
+                    <img src="images/07_statistics.png" alt="Statistics view">
+                    <p>Statistics</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Local Receiver -->
+    <section id="local" class="local-section">
+        <div class="section-inner">
+            <div class="local-grid">
+                <div class="local-text fade-in">
+                    <h2>Your Receiver, Your Data, Zero Internet</h2>
+                    <p>ADSBWho connects directly to your personal ADS-B receiver on your local Wi-Fi network. No cloud, no data usage, no latency — just instant aircraft data straight from your antenna.</p>
+                    <p>Compatible with FlightAware PiAware, ADS-B Exchange feeders, and any receiver running dump1090 or readsb.</p>
+                    <ul class="local-benefits">
+                        <li><span class="check">&#10003;</span> Zero internet data usage in local mode</li>
+                        <li><span class="check">&#10003;</span> Instant updates with no cloud latency</li>
+                        <li><span class="check">&#10003;</span> Works with dump1090, readsb, PiAware</li>
+                        <li><span class="check">&#10003;</span> Remote feed available when away from home</li>
+                        <li><span class="check">&#10003;</span> Use both feeds simultaneously for maximum coverage</li>
+                    </ul>
+                </div>
+                <div class="local-image fade-in">
+                    <img src="images/01_map.png" alt="ADSBWho map with local receiver data">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section" id="notify">
+        <div class="section-inner fade-in">
+            <h2>Ready to Query the Sky?</h2>
+            <p>ADSBWho is coming soon to the App Store. Be the first to know when it launches.</p>
+            <a href="#" class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                Coming Soon on the App Store
+            </a>
+        </div>
+    </section>
+
+    <!-- Privacy -->
+    <section id="privacy" style="padding: 4rem 2rem;">
+        <div class="section-inner" style="max-width: 800px;">
+            <div class="fade-in">
+                <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">Privacy Policy</h2>
+                <div style="color: var(--text-secondary); line-height: 1.8; font-size: 0.95rem;">
+                    <p style="margin-bottom: 1rem;"><strong style="color: var(--text-primary);">Your privacy matters.</strong> ADSBWho is designed with privacy at its core.</p>
+                    <p style="margin-bottom: 1rem;"><strong style="color: var(--text-primary);">Location Data:</strong> Your location is used solely to calculate aircraft proximity, compass direction, and moon transit predictions. Location data stays on your device and is never transmitted to any server.</p>
+                    <p style="margin-bottom: 1rem;"><strong style="color: var(--text-primary);">ADS-B Data:</strong> When using a local receiver, all data stays on your local network. Remote feed queries are made directly to the data provider — ADSBWho does not operate any intermediate servers.</p>
+                    <p style="margin-bottom: 1rem;"><strong style="color: var(--text-primary);">Spotting Log & Statistics:</strong> All logged data (aircraft sightings, watchlists, coverage data) is stored locally on your device. No personal data is collected, shared, or sold.</p>
+                    <p style="margin-bottom: 1rem;"><strong style="color: var(--text-primary);">Analytics:</strong> ADSBWho does not include any third-party analytics, tracking, or advertising SDKs.</p>
+                    <p><strong style="color: var(--text-primary);">Contact:</strong> For questions about this privacy policy, please reach out via the app's App Store page.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <img src="images/appicon.png" alt="ADSBWho">
+                <span>ADSBWho</span>
+            </div>
+            <ul class="footer-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#screenshots">Screenshots</a></li>
+                <li><a href="#privacy">Privacy Policy</a></li>
+            </ul>
+            <p class="footer-copy">&copy; 2026 ADSBWho. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scroll animation script -->
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
