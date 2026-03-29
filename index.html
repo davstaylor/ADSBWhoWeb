@@ -4,29 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ADSBWho - Your Personal Sky Radar</title>
-    <meta name="description" content="Track every plane overhead in real time. ADS-B radar, spotting log, AR sky view, moon transit alerts & Live Activity — coming soon to iOS.">
+    <meta name="description" content="Track every plane overhead in real time. ADS-B radar, spotting log, AR sky view, moon transit alerts & Live Activity — coming soon to the App Store.">
+    <meta name="keywords" content="ADS-B, aircraft tracking, plane spotter, aviation, iOS app, augmented reality, live activity, moon transit">
     <meta property="og:title" content="ADSBWho - Your Personal Sky Radar">
-    <meta property="og:description" content="Real-time aircraft tracking with ADS-B radar, AR sky view, spotting log, moon transit predictions & Live Activity.">
-    <meta property="og:image" content="images/01_map.png">
+    <meta property="og:description" content="Real-time aircraft tracking with ADS-B radar, AR sky view, spotting log, moon transit predictions & Live Activity. Coming soon to the App Store.">
+    <meta property="og:image" content="https://adsbwho.xyz/images/01_map.png">
+    <meta property="og:url" content="https://adsbwho.xyz">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ADSBWho">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ADSBWho - Your Personal Sky Radar">
+    <meta name="twitter:description" content="Real-time aircraft tracking with ADS-B radar, AR sky view, spotting log, moon transit predictions & Live Activity.">
+    <meta name="twitter:image" content="https://adsbwho.xyz/images/01_map.png">
+    <meta name="theme-color" content="#0a0e1a">
+    <link rel="canonical" href="https://adsbwho.xyz">
     <link rel="apple-touch-icon" href="images/appicon.png">
     <link rel="icon" type="image/png" href="images/appicon.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0a0e1a;
-            --bg-secondary: #111827;
-            --bg-card: #1a2035;
-            --text-primary: #f0f4ff;
-            --text-secondary: #94a3b8;
+            --bg-primary: #06090f;
+            --bg-secondary: #0d1117;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.06);
+            --text-primary: #e8edf5;
+            --text-secondary: #7d8aa1;
             --accent-cyan: #22d3ee;
             --accent-blue: #3b82f6;
             --accent-green: #34d399;
-            --gradient-start: #0f172a;
-            --gradient-end: #1e1b4b;
+            --accent-purple: #a78bfa;
+            --accent-amber: #fbbf24;
+            --accent-rose: #fb7185;
+            --border: rgba(255, 255, 255, 0.06);
         }
 
         * {
@@ -35,83 +43,115 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Animated background */
-        .bg-glow {
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* ---- Animated hero background ---- */
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .hero-bg canvas {
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
         }
 
-        .bg-glow::before {
-            content: '';
+        .hero-gradient {
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(ellipse at 30% 20%, rgba(34, 211, 238, 0.06) 0%, transparent 50%),
-                        radial-gradient(ellipse at 70% 60%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
-                        radial-gradient(ellipse at 50% 80%, rgba(52, 211, 153, 0.03) 0%, transparent 50%);
-            animation: bgFloat 20s ease-in-out infinite alternate;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(34, 211, 238, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 20% 50%, rgba(59, 130, 246, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 60%, rgba(167, 139, 250, 0.05) 0%, transparent 60%);
+            animation: gradientShift 12s ease-in-out infinite alternate;
         }
 
-        @keyframes bgFloat {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            100% { transform: translate(-2%, -2%) rotate(3deg); }
+        @keyframes gradientShift {
+            0% { opacity: 0.7; transform: scale(1) translateY(0); }
+            50% { opacity: 1; transform: scale(1.05) translateY(-10px); }
+            100% { opacity: 0.8; transform: scale(1) translateY(5px); }
         }
 
-        /* Navigation */
+        .hero-vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, transparent 40%, var(--bg-primary) 100%);
+        }
+
+        /* Grid overlay */
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%);
+        }
+
+        /* ---- Navigation ---- */
         nav {
             position: fixed;
             top: 0;
             width: 100%;
             z-index: 100;
-            padding: 1rem 2rem;
-            background: rgba(10, 14, 26, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0 2rem;
+            transition: background 0.3s, border-color 0.3s;
+            background: rgba(6, 9, 15, 0.6);
+            backdrop-filter: blur(24px) saturate(1.4);
+            -webkit-backdrop-filter: blur(24px) saturate(1.4);
+            border-bottom: 1px solid transparent;
+        }
+
+        nav.scrolled {
+            background: rgba(6, 9, 15, 0.9);
+            border-bottom-color: var(--border);
         }
 
         .nav-inner {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            height: 64px;
         }
 
         .nav-brand {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.6rem;
             text-decoration: none;
         }
 
         .nav-icon {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
             object-fit: cover;
         }
 
         .nav-brand span {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--text-primary);
+            letter-spacing: -0.01em;
         }
 
         .nav-links {
@@ -123,28 +163,30 @@
         .nav-links a {
             color: var(--text-secondary);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             font-weight: 500;
-            transition: color 0.3s;
+            transition: color 0.2s;
         }
 
         .nav-links a:hover {
-            color: var(--accent-cyan);
+            color: var(--text-primary);
         }
 
-        /* Hero */
+        /* ---- Hero ---- */
         .hero {
             position: relative;
-            z-index: 1;
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 8rem 2rem 4rem;
+            padding: 7rem 2rem 4rem;
         }
 
         .hero-inner {
-            max-width: 1200px;
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
             width: 100%;
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -153,51 +195,56 @@
         }
 
         .hero-text {
-            max-width: 560px;
+            max-width: 520px;
         }
 
-        .coming-soon-badge {
+        .badge {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(34, 211, 238, 0.1);
-            border: 1px solid rgba(34, 211, 238, 0.3);
+            background: rgba(34, 211, 238, 0.08);
+            border: 1px solid rgba(34, 211, 238, 0.2);
             border-radius: 100px;
-            padding: 0.4rem 1rem;
-            font-size: 0.8rem;
+            padding: 0.35rem 1rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--accent-cyan);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
         }
 
-        .coming-soon-badge .dot {
-            width: 8px;
-            height: 8px;
+        .badge-dot {
+            width: 6px;
+            height: 6px;
             background: var(--accent-cyan);
             border-radius: 50%;
-            animation: pulse 2s ease-in-out infinite;
+            animation: dotPulse 2s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
         }
 
-        @keyframes pulse {
+        @keyframes dotPulse {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
+            50% { opacity: 0.4; transform: scale(0.7); }
         }
 
-        .hero h1 {
-            font-size: 3.5rem;
+        .hero-title {
+            font-size: clamp(2.25rem, 5vw, 3.5rem);
             font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+            line-height: 1.08;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-title .gradient {
+            background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 50%, #a78bfa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .hero p {
-            font-size: 1.2rem;
+            font-size: 1.125rem;
             line-height: 1.7;
             color: var(--text-secondary);
             margin-bottom: 2rem;
@@ -205,7 +252,7 @@
 
         .hero-cta {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -215,74 +262,94 @@
             align-items: center;
             gap: 0.5rem;
             background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-            color: var(--bg-primary);
-            padding: 0.9rem 2rem;
+            color: #000;
+            padding: 0.8rem 1.75rem;
             border-radius: 12px;
             text-decoration: none;
             font-weight: 700;
-            font-size: 1rem;
-            transition: transform 0.3s, box-shadow 0.3s;
+            font-size: 0.95rem;
+            transition: transform 0.2s, box-shadow 0.2s;
             border: none;
             cursor: pointer;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(34, 211, 238, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 24px rgba(34, 211, 238, 0.25);
         }
 
         .btn-secondary {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             color: var(--text-primary);
-            padding: 0.9rem 2rem;
+            padding: 0.8rem 1.75rem;
             border-radius: 12px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.12);
         }
 
-        .hero-screenshots {
+        /* Hero phone mockups */
+        .hero-phones {
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 560px;
         }
 
-        .hero-phone {
-            width: 280px;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
-                        0 0 80px rgba(34, 211, 238, 0.1);
-            transform: perspective(1000px) rotateY(-5deg);
-            transition: transform 0.5s;
-        }
-
-        .hero-phone:hover {
-            transform: perspective(1000px) rotateY(0deg);
-        }
-
-        .hero-phone-back {
+        .phone-frame {
             position: absolute;
-            width: 240px;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-            right: 0;
-            top: 60px;
-            opacity: 0.7;
-            transform: perspective(1000px) rotateY(-8deg) translateX(20px);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow:
+                0 24px 80px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.06),
+                0 0 60px rgba(34, 211, 238, 0.06);
+            transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        /* Section styling */
+        .phone-frame img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .phone-primary {
+            width: 260px;
+            height: 563px;
+            z-index: 2;
+            transform: translateX(-10px);
+        }
+
+        .phone-primary:hover {
+            transform: translateX(-10px) translateY(-4px);
+        }
+
+        .phone-secondary {
+            width: 220px;
+            height: 476px;
+            z-index: 1;
+            transform: translateX(100px) translateY(30px);
+            opacity: 0.6;
+        }
+
+        .phone-secondary:hover {
+            opacity: 0.85;
+            transform: translateX(100px) translateY(26px);
+        }
+
+        /* ---- Sections ---- */
         section {
             position: relative;
             z-index: 1;
@@ -290,8 +357,33 @@
         }
 
         .section-inner {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
+        }
+
+        .section-label {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-cyan);
+            margin-bottom: 0.75rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            margin-bottom: 1rem;
+        }
+
+        .section-desc {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            max-width: 560px;
+            line-height: 1.7;
         }
 
         .section-header {
@@ -299,117 +391,184 @@
             margin-bottom: 4rem;
         }
 
-        .section-header h2 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-        }
-
-        .section-header p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            max-width: 600px;
+        .section-header .section-desc {
             margin: 0 auto;
         }
 
-        /* Features grid */
+        /* ---- Features grid (compact cards) ---- */
         .features-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
+            gap: 1px;
+            background: var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border);
         }
 
         .feature-card {
-            background: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
+            background: var(--bg-secondary);
             padding: 2rem;
-            transition: transform 0.3s, border-color 0.3s;
+            transition: background 0.3s;
         }
 
         .feature-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(34, 211, 238, 0.2);
+            background: var(--bg-card-hover);
         }
 
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+        .feature-icon-wrap {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
             margin-bottom: 1.25rem;
+            font-size: 1.25rem;
         }
 
-        .feature-icon.cyan { background: rgba(34, 211, 238, 0.15); }
-        .feature-icon.blue { background: rgba(59, 130, 246, 0.15); }
-        .feature-icon.green { background: rgba(52, 211, 153, 0.15); }
-        .feature-icon.purple { background: rgba(168, 85, 247, 0.15); }
-        .feature-icon.amber { background: rgba(251, 191, 36, 0.15); }
-        .feature-icon.rose { background: rgba(251, 113, 133, 0.15); }
+        .fi-cyan { background: rgba(34, 211, 238, 0.1); color: var(--accent-cyan); }
+        .fi-purple { background: rgba(167, 139, 250, 0.1); color: var(--accent-purple); }
+        .fi-green { background: rgba(52, 211, 153, 0.1); color: var(--accent-green); }
+        .fi-amber { background: rgba(251, 191, 36, 0.1); color: var(--accent-amber); }
+        .fi-blue { background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); }
+        .fi-rose { background: rgba(251, 113, 133, 0.1); color: var(--accent-rose); }
 
         .feature-card h3 {
-            font-size: 1.15rem;
+            font-size: 1rem;
             font-weight: 700;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
         }
 
         .feature-card p {
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             line-height: 1.6;
             color: var(--text-secondary);
         }
 
-        /* Screenshot showcase */
-        .showcase {
-            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
+        /* ---- Alternating feature showcase ---- */
+        .feature-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            padding: 4rem 0;
         }
 
-        .showcase-scroll {
+        .feature-row + .feature-row {
+            border-top: 1px solid var(--border);
+        }
+
+        .feature-row.reverse .feature-row-text {
+            order: 2;
+        }
+
+        .feature-row.reverse .feature-row-img {
+            order: 1;
+        }
+
+        .feature-row-text h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-row-text p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .feature-row-text .tag {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .tag-cyan { background: rgba(34, 211, 238, 0.1); color: var(--accent-cyan); }
+        .tag-green { background: rgba(52, 211, 153, 0.1); color: var(--accent-green); }
+        .tag-amber { background: rgba(251, 191, 36, 0.1); color: var(--accent-amber); }
+        .tag-blue { background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); }
+        .tag-purple { background: rgba(167, 139, 250, 0.1); color: var(--accent-purple); }
+
+        .feature-row-img {
             display: flex;
-            gap: 2rem;
+            justify-content: center;
+        }
+
+        .feature-row-img img {
+            width: 260px;
+            border-radius: 24px;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.04);
+        }
+
+        /* ---- Screenshot gallery ---- */
+        .gallery {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .gallery-track {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1rem 0 2rem;
             overflow-x: auto;
-            padding: 2rem 0;
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
         }
 
-        .showcase-scroll::-webkit-scrollbar {
+        .gallery-track::-webkit-scrollbar {
             display: none;
         }
 
-        .showcase-item {
+        .gallery-item {
             flex: 0 0 auto;
             scroll-snap-align: center;
             text-align: center;
         }
 
-        .showcase-item img {
-            width: 260px;
+        .gallery-item:first-child {
+            margin-left: max(2rem, calc((100vw - 1100px) / 2));
+        }
+
+        .gallery-item:last-child {
+            margin-right: max(2rem, calc((100vw - 1100px) / 2));
+        }
+
+        .gallery-item img {
+            width: 240px;
             border-radius: 20px;
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
             transition: transform 0.3s;
         }
 
-        .showcase-item img:hover {
-            transform: scale(1.03);
+        .gallery-item img:hover {
+            transform: scale(1.02);
         }
 
-        .showcase-item p {
-            margin-top: 1rem;
-            font-size: 0.9rem;
+        .gallery-item span {
+            display: block;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-secondary);
         }
 
-        /* Local receiver section */
+        /* ---- Local receiver section ---- */
         .local-section {
-            background: var(--bg-secondary);
-            border-top: 1px solid rgba(255, 255, 255, 0.03);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            border-top: 1px solid var(--border);
         }
 
         .local-grid {
@@ -420,83 +579,161 @@
         }
 
         .local-text h2 {
-            font-size: 2.2rem;
+            font-size: clamp(1.75rem, 3vw, 2.25rem);
             font-weight: 800;
-            margin-bottom: 1.25rem;
-        }
-
-        .local-text p {
-            font-size: 1.05rem;
-            line-height: 1.8;
-            color: var(--text-secondary);
+            letter-spacing: -0.02em;
             margin-bottom: 1rem;
         }
 
-        .local-benefits {
-            list-style: none;
-            margin-top: 1.5rem;
+        .local-text p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
         }
 
-        .local-benefits li {
+        .check-list {
+            list-style: none;
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .check-list li {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0;
-            font-size: 0.95rem;
+            gap: 0.6rem;
+            font-size: 0.9rem;
             color: var(--text-secondary);
         }
 
-        .local-benefits .check {
-            color: var(--accent-green);
-            font-size: 1.1rem;
+        .check-mark {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            background: rgba(52, 211, 153, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .local-image {
+        .check-mark svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .local-img {
             display: flex;
             justify-content: center;
         }
 
-        .local-image img {
-            width: 300px;
+        .local-img img {
+            width: 280px;
             border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.04);
         }
 
-        /* CTA section */
-        .cta-section {
+        /* ---- CTA ---- */
+        .cta {
             text-align: center;
             padding: 8rem 2rem;
+            position: relative;
         }
 
-        .cta-section h2 {
-            font-size: 2.8rem;
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%; transform: translateX(-50%);
+            width: 600px;
+            height: 300px;
+            background: radial-gradient(ellipse, rgba(34, 211, 238, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .cta h2 {
+            font-size: clamp(2rem, 4vw, 2.75rem);
             font-weight: 800;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
         }
 
-        .cta-section p {
-            font-size: 1.15rem;
+        .cta p {
+            font-size: 1.05rem;
             color: var(--text-secondary);
             margin-bottom: 2.5rem;
-            max-width: 500px;
+            max-width: 440px;
             margin-left: auto;
             margin-right: auto;
         }
 
-        /* Footer */
+        .cta .app-store-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: #fff;
+            color: #000;
+            padding: 0.9rem 2rem;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta .app-store-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .cta .app-store-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* ---- Privacy ---- */
+        .privacy-section {
+            border-top: 1px solid var(--border);
+            padding: 4rem 2rem;
+        }
+
+        .privacy-inner {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .privacy-inner h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .privacy-inner p {
+            font-size: 0.9rem;
+            line-height: 1.75;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .privacy-inner strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* ---- Footer ---- */
         footer {
             position: relative;
             z-index: 1;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+            padding: 2.5rem 2rem;
         }
 
         .footer-inner {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -512,136 +749,129 @@
         }
 
         .footer-brand img {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             border-radius: 6px;
         }
 
         .footer-brand span {
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .footer-links {
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
             list-style: none;
         }
 
         .footer-links a {
             color: var(--text-secondary);
             text-decoration: none;
-            font-size: 0.85rem;
-            transition: color 0.3s;
+            font-size: 0.8rem;
+            transition: color 0.2s;
         }
 
         .footer-links a:hover {
-            color: var(--accent-cyan);
+            color: var(--text-primary);
         }
 
         .footer-copy {
             color: var(--text-secondary);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
-        /* Responsive */
-        @media (max-width: 968px) {
+        /* ---- Scroll reveal ---- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Stagger children */
+        .stagger > .reveal:nth-child(2) { transition-delay: 0.08s; }
+        .stagger > .reveal:nth-child(3) { transition-delay: 0.16s; }
+        .stagger > .reveal:nth-child(4) { transition-delay: 0.24s; }
+        .stagger > .reveal:nth-child(5) { transition-delay: 0.32s; }
+        .stagger > .reveal:nth-child(6) { transition-delay: 0.40s; }
+        .stagger > .reveal:nth-child(7) { transition-delay: 0.48s; }
+        .stagger > .reveal:nth-child(8) { transition-delay: 0.56s; }
+        .stagger > .reveal:nth-child(9) { transition-delay: 0.64s; }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 960px) {
             .hero-inner {
                 grid-template-columns: 1fr;
                 text-align: center;
-                gap: 3rem;
+                gap: 2rem;
             }
-
             .hero-text {
                 max-width: 100%;
             }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
             .hero-cta {
                 justify-content: center;
             }
-
-            .hero-phone {
-                width: 240px;
+            .hero-phones {
+                height: 420px;
             }
-
-            .hero-phone-back {
+            .phone-primary {
                 width: 200px;
+                height: 433px;
             }
-
+            .phone-secondary {
+                width: 170px;
+                height: 368px;
+                transform: translateX(80px) translateY(20px);
+            }
             .features-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-
+            .feature-row {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                text-align: center;
+            }
+            .feature-row.reverse .feature-row-text { order: unset; }
+            .feature-row.reverse .feature-row-img { order: unset; }
+            .feature-row-img { order: -1 !important; }
             .local-grid {
                 grid-template-columns: 1fr;
                 gap: 2rem;
+                text-align: center;
             }
-
-            .local-image {
-                order: -1;
-            }
+            .local-img { order: -1; }
+            .check-list { align-items: center; }
         }
 
         @media (max-width: 640px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .section-header h2 {
-                font-size: 2rem;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .cta-section h2 {
-                font-size: 2rem;
-            }
-
-            .local-text h2 {
-                font-size: 1.8rem;
-            }
-
-            .footer-inner {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-
-        /* Scroll animations */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
+            section { padding: 4rem 1.25rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .hero { padding: 6rem 1.25rem 3rem; }
+            .hero-phones { height: 360px; }
+            .phone-primary { width: 180px; height: 390px; }
+            .phone-secondary { width: 150px; height: 325px; transform: translateX(65px) translateY(20px); }
+            .feature-row-img img { width: 220px; }
+            .local-img img { width: 220px; }
+            .gallery-item img { width: 200px; }
+            .gallery-item:first-child { margin-left: 1.25rem; }
+            .gallery-item:last-child { margin-right: 1.25rem; }
+            .footer-inner { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <div class="bg-glow"></div>
 
     <!-- Navigation -->
-    <nav>
+    <nav id="nav">
         <div class="nav-inner">
             <a href="#" class="nav-brand">
-                <img src="images/appicon.png" alt="ADSBWho" class="nav-icon">
+                <img src="images/appicon.png" alt="ADSBWho" class="nav-icon" width="32" height="32">
                 <span>ADSBWho</span>
             </a>
             <ul class="nav-links">
@@ -655,111 +885,195 @@
 
     <!-- Hero -->
     <section class="hero">
+        <div class="hero-bg">
+            <canvas id="particles"></canvas>
+            <div class="hero-gradient"></div>
+            <div class="hero-grid"></div>
+            <div class="hero-vignette"></div>
+        </div>
         <div class="hero-inner">
             <div class="hero-text">
-                <div class="coming-soon-badge">
-                    <span class="dot"></span>
-                    Coming Soon to iOS
+                <div class="badge">
+                    <span class="badge-dot"></span>
+                    Coming Soon to the App Store
                 </div>
-                <h1>Your Personal Sky Radar</h1>
+                <h1 class="hero-title">
+                    <span class="gradient">Your Personal</span><br>Sky Radar
+                </h1>
                 <p>Track every aircraft overhead in real time. Connect to your own ADS-B receiver, explore the sky in augmented reality, and never miss a plane again.</p>
                 <div class="hero-cta">
                     <a href="#notify" class="btn-primary">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                        Notify Me
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                        Coming Soon
                     </a>
-                    <a href="#features" class="btn-secondary">Learn More</a>
+                    <a href="#features" class="btn-secondary">Explore Features</a>
                 </div>
             </div>
-            <div class="hero-screenshots">
-                <img src="images/02_detail.png" alt="ADSBWho aircraft detail" class="hero-phone-back">
-                <img src="images/01_map.png" alt="ADSBWho live map" class="hero-phone">
+            <div class="hero-phones">
+                <div class="phone-frame phone-primary">
+                    <img src="images/01_map.png" alt="ADSBWho live aircraft map" width="260" height="563">
+                </div>
+                <div class="phone-frame phone-secondary">
+                    <img src="images/02_detail.png" alt="ADSBWho aircraft detail" width="220" height="476">
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Features -->
+    <!-- Features Grid -->
     <section id="features">
         <div class="section-inner">
-            <div class="section-header fade-in">
-                <h2>Everything You Need to Track the Sky</h2>
-                <p>Packed with features for aviation enthusiasts, plane spotters, and the curious.</p>
+            <div class="section-header reveal">
+                <span class="section-label">Features</span>
+                <h2 class="section-title">Everything You Need to Track the Sky</h2>
+                <p class="section-desc">Packed with features for aviation enthusiasts, plane spotters, and anyone curious about what is flying overhead.</p>
             </div>
-            <div class="features-grid">
-                <div class="feature-card fade-in">
-                    <div class="feature-icon cyan">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <div class="features-grid stagger">
+                <div class="feature-card reveal">
+                    <div class="feature-icon-wrap fi-cyan">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
                     </div>
                     <h3>Live Aircraft Radar</h3>
-                    <p>Watch planes appear on your map in real time with callsigns, altitudes, speeds, aircraft types, and registrations.</p>
+                    <p>Real-time map with callsigns, altitudes, speeds, aircraft types, and registration data.</p>
                 </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon purple">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <div class="feature-card reveal">
+                    <div class="feature-icon-wrap fi-purple">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </div>
-                    <h3>Augmented Reality</h3>
-                    <p>Point your phone at the sky and see aircraft labels overlaid in AR. Identify flights instantly right where you're looking.</p>
+                    <h3>AR Sky View</h3>
+                    <p>Point your phone at the sky to see aircraft labels overlaid in augmented reality.</p>
                 </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon green">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <div class="feature-card reveal">
+                    <div class="feature-icon-wrap fi-green">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     </div>
                     <h3>Spotting Log</h3>
-                    <p>Every aircraft is automatically logged with registration, callsign history, route history, and timestamps. Filter by date range.</p>
+                    <p>Automatic logging of every aircraft with registration, callsign, and date filtering.</p>
                 </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon amber">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <div class="feature-card reveal">
+                    <div class="feature-icon-wrap fi-amber">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                     </div>
-                    <h3>Moon Transit Predictions</h3>
-                    <p>Get notified when an aircraft is about to pass in front of the moon from your location. A feature you won't find anywhere else.</p>
+                    <h3>Moon Transits</h3>
+                    <p>Predict when aircraft will cross the moon from your location. Truly unique.</p>
                 </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon blue">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div class="feature-card reveal">
+                    <div class="feature-icon-wrap fi-blue">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
                     </div>
-                    <h3>Live Activity & Dynamic Island</h3>
-                    <p>Monitor aircraft counts, nearest flight, and distance right from your lock screen — without opening the app.</p>
+                    <h3>Live Activity</h3>
+                    <p>Aircraft count and nearest flight on your lock screen via Live Activity and Dynamic Island.</p>
                 </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon rose">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <div class="feature-card reveal">
+                    <div class="feature-icon-wrap fi-rose">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                     </div>
-                    <h3>Smart Notifications</h3>
-                    <p>Proximity alerts with altitude, distance, and compass direction. Towers and duplicates are automatically filtered out.</p>
+                    <h3>Smart Alerts</h3>
+                    <p>Proximity notifications with altitude, distance, and compass direction.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon-wrap fi-cyan">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    </div>
+                    <h3>Statistics</h3>
+                    <p>Most spotted aircraft, type breakdowns, daily counts, and coverage analysis.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon-wrap fi-purple">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <h3>Watchlist</h3>
+                    <p>Track specific aircraft by registration or hex code and get notified when they appear.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon-wrap fi-green">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                    </div>
+                    <h3>Local Receiver</h3>
+                    <p>Connect to your own ADS-B receiver over Wi-Fi. Zero internet usage needed.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Screenshots -->
-    <section id="screenshots" class="showcase">
+    <!-- Feature Showcases (alternating) -->
+    <section>
         <div class="section-inner">
-            <div class="section-header fade-in">
-                <h2>See It in Action</h2>
-                <p>Designed for iOS with a clean, dark interface built for day and night spotting.</p>
+            <div class="feature-row reveal">
+                <div class="feature-row-text">
+                    <span class="tag tag-cyan">Live Radar</span>
+                    <h3>Real-Time Aircraft on Your Map</h3>
+                    <p>Watch aircraft appear and move in real time with rich details including callsign, altitude, ground speed, heading, aircraft type, airline, and registration. Tap any aircraft for a full detail view with route info and photos.</p>
+                </div>
+                <div class="feature-row-img">
+                    <img src="images/01_map.png" alt="ADSBWho live radar map" width="260" height="563" loading="lazy">
+                </div>
             </div>
-            <div class="showcase-scroll">
-                <div class="showcase-item">
-                    <img src="images/01_map.png" alt="Live aircraft map">
-                    <p>Live Map</p>
+
+            <div class="feature-row reverse reveal">
+                <div class="feature-row-text">
+                    <span class="tag tag-green">Spotting Log</span>
+                    <h3>Every Sighting, Automatically Logged</h3>
+                    <p>ADSBWho builds a personal spotting log as you track. Every unique aircraft is recorded with its registration, callsign history, route data, and timestamps. Filter by date range to review your spotting sessions.</p>
                 </div>
-                <div class="showcase-item">
-                    <img src="images/02_detail.png" alt="Aircraft detail view">
-                    <p>Aircraft Details</p>
+                <div class="feature-row-img">
+                    <img src="images/03_spotting_log.png" alt="ADSBWho spotting log" width="260" height="563" loading="lazy">
                 </div>
-                <div class="showcase-item">
-                    <img src="images/03_spotting_log.png" alt="Spotting log">
-                    <p>Spotting Log</p>
+            </div>
+
+            <div class="feature-row reveal">
+                <div class="feature-row-text">
+                    <span class="tag tag-blue">Lock Screen</span>
+                    <h3>Live Activity &amp; Dynamic Island</h3>
+                    <p>Keep tabs on the sky without opening the app. The Live Activity shows aircraft count, nearest flight callsign, and distance right on your lock screen. Dynamic Island gives you a glanceable summary that updates in real time.</p>
                 </div>
-                <div class="showcase-item">
-                    <img src="images/06_live_activity.png" alt="Live Activity widget">
-                    <p>Live Activity</p>
+                <div class="feature-row-img">
+                    <img src="images/06_live_activity.png" alt="ADSBWho Live Activity on lock screen" width="260" height="563" loading="lazy">
                 </div>
-                <div class="showcase-item">
-                    <img src="images/07_statistics.png" alt="Statistics view">
-                    <p>Statistics</p>
+            </div>
+
+            <div class="feature-row reverse reveal">
+                <div class="feature-row-text">
+                    <span class="tag tag-purple">Analytics</span>
+                    <h3>Detailed Statistics &amp; Insights</h3>
+                    <p>See which aircraft types you spot most, your busiest spotting days, total unique registrations, and airline breakdowns. ADSBWho turns your raw sightings into meaningful data about the traffic above your location.</p>
                 </div>
+                <div class="feature-row-img">
+                    <img src="images/07_statistics.png" alt="ADSBWho statistics" width="260" height="563" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshot Gallery -->
+    <section id="screenshots" class="gallery">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <span class="section-label">Screenshots</span>
+                <h2 class="section-title">See It in Action</h2>
+                <p class="section-desc">A clean, dark interface designed for day and night spotting on iOS.</p>
+            </div>
+        </div>
+        <div class="gallery-track">
+            <div class="gallery-item">
+                <img src="images/01_map.png" alt="Live aircraft map" width="240" height="520" loading="lazy">
+                <span>Live Map</span>
+            </div>
+            <div class="gallery-item">
+                <img src="images/02_detail.png" alt="Aircraft detail view" width="240" height="520" loading="lazy">
+                <span>Aircraft Details</span>
+            </div>
+            <div class="gallery-item">
+                <img src="images/03_spotting_log.png" alt="Spotting log" width="240" height="520" loading="lazy">
+                <span>Spotting Log</span>
+            </div>
+            <div class="gallery-item">
+                <img src="images/06_live_activity.png" alt="Live Activity on lock screen" width="240" height="520" loading="lazy">
+                <span>Live Activity</span>
+            </div>
+            <div class="gallery-item">
+                <img src="images/07_statistics.png" alt="Statistics view" width="240" height="520" loading="lazy">
+                <span>Statistics</span>
             </div>
         </div>
     </section>
@@ -768,51 +1082,63 @@
     <section id="local" class="local-section">
         <div class="section-inner">
             <div class="local-grid">
-                <div class="local-text fade-in">
+                <div class="local-text reveal">
+                    <span class="section-label">Local Mode</span>
                     <h2>Your Receiver, Your Data, Zero Internet</h2>
-                    <p>ADSBWho connects directly to your personal ADS-B receiver on your local Wi-Fi network. No cloud, no data usage, no latency — just instant aircraft data straight from your antenna.</p>
+                    <p>ADSBWho connects directly to your personal ADS-B receiver over your local Wi-Fi network. No cloud, no data usage, no latency.</p>
                     <p>Compatible with FlightAware PiAware, ADS-B Exchange feeders, and any receiver running dump1090 or readsb.</p>
-                    <ul class="local-benefits">
-                        <li><span class="check">&#10003;</span> Zero internet data usage in local mode</li>
-                        <li><span class="check">&#10003;</span> Instant updates with no cloud latency</li>
-                        <li><span class="check">&#10003;</span> Works with dump1090, readsb, PiAware</li>
-                        <li><span class="check">&#10003;</span> Remote feed available when away from home</li>
-                        <li><span class="check">&#10003;</span> Use both feeds simultaneously for maximum coverage</li>
+                    <ul class="check-list">
+                        <li>
+                            <span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            Zero internet data usage in local mode
+                        </li>
+                        <li>
+                            <span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            Instant updates with no cloud latency
+                        </li>
+                        <li>
+                            <span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            Works with dump1090, readsb, tar1090
+                        </li>
+                        <li>
+                            <span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            Remote feed support when away from home
+                        </li>
+                        <li>
+                            <span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                            Use both feeds simultaneously
+                        </li>
                     </ul>
                 </div>
-                <div class="local-image fade-in">
-                    <img src="images/01_map.png" alt="ADSBWho map with local receiver data">
+                <div class="local-img reveal">
+                    <img src="images/01_map.png" alt="ADSBWho map with local receiver data" width="280" height="607" loading="lazy">
                 </div>
             </div>
         </div>
     </section>
 
     <!-- CTA -->
-    <section class="cta-section" id="notify">
-        <div class="section-inner fade-in">
+    <section class="cta" id="notify">
+        <div class="section-inner reveal">
             <h2>Ready to Query the Sky?</h2>
-            <p>ADSBWho is coming soon to the App Store. Be the first to know when it launches.</p>
-            <a href="#" class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            <p>ADSBWho is coming soon to the App Store. Stay tuned for launch.</p>
+            <a href="#" class="app-store-btn">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
                 Coming Soon on the App Store
             </a>
         </div>
     </section>
 
     <!-- Privacy -->
-    <section id="privacy" style="padding: 4rem 2rem;">
-        <div class="section-inner" style="max-width: 800px;">
-            <div class="fade-in">
-                <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">Privacy Policy</h2>
-                <div style="color: var(--text-secondary); line-height: 1.8; font-size: 0.95rem;">
-                    <p style="margin-bottom: 1rem;"><strong style="color: var(--text-primary);">Your privacy matters.</strong> ADSBWho is designed with privacy at its core.</p>
-                    <p style="margin-bottom: 1rem;"><strong style="color: var(--text-primary);">Location Data:</strong> Your location is used solely to calculate aircraft proximity, compass direction, and moon transit predictions. Location data stays on your device and is never transmitted to any server.</p>
-                    <p style="margin-bottom: 1rem;"><strong style="color: var(--text-primary);">ADS-B Data:</strong> When using a local receiver, all data stays on your local network. Remote feed queries are made directly to the data provider — ADSBWho does not operate any intermediate servers.</p>
-                    <p style="margin-bottom: 1rem;"><strong style="color: var(--text-primary);">Spotting Log & Statistics:</strong> All logged data (aircraft sightings, watchlists, coverage data) is stored locally on your device. No personal data is collected, shared, or sold.</p>
-                    <p style="margin-bottom: 1rem;"><strong style="color: var(--text-primary);">Analytics:</strong> ADSBWho does not include any third-party analytics, tracking, or advertising SDKs.</p>
-                    <p><strong style="color: var(--text-primary);">Contact:</strong> For questions about this privacy policy, please reach out via the app's App Store page.</p>
-                </div>
-            </div>
+    <section id="privacy" class="privacy-section">
+        <div class="privacy-inner reveal">
+            <h2>Privacy Policy</h2>
+            <p><strong>Your privacy matters.</strong> ADSBWho is designed with privacy at its core.</p>
+            <p><strong>Location Data:</strong> Your location is used solely to calculate aircraft proximity, compass direction, and moon transit predictions. Location data stays on your device and is never transmitted to any server.</p>
+            <p><strong>ADS-B Data:</strong> When using a local receiver, all data stays on your local network. Remote feed queries are made directly to the data provider. ADSBWho does not operate any intermediate servers.</p>
+            <p><strong>Spotting Log &amp; Statistics:</strong> All logged data (aircraft sightings, watchlists, coverage data) is stored locally on your device. No personal data is collected, shared, or sold.</p>
+            <p><strong>Analytics:</strong> ADSBWho does not include any third-party analytics, tracking, or advertising SDKs.</p>
+            <p><strong>Contact:</strong> For questions about this privacy policy, please reach out via the app's App Store page.</p>
         </div>
     </section>
 
@@ -820,43 +1146,85 @@
     <footer>
         <div class="footer-inner">
             <div class="footer-brand">
-                <img src="images/appicon.png" alt="ADSBWho">
+                <img src="images/appicon.png" alt="ADSBWho" width="24" height="24">
                 <span>ADSBWho</span>
             </div>
             <ul class="footer-links">
                 <li><a href="#features">Features</a></li>
                 <li><a href="#screenshots">Screenshots</a></li>
-                <li><a href="#privacy">Privacy Policy</a></li>
+                <li><a href="#privacy">Privacy</a></li>
             </ul>
             <p class="footer-copy">&copy; 2026 ADSBWho. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Scroll animation script -->
     <script>
+        // Scroll reveal
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
                 }
             });
-        }, {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-        // Smooth scroll for nav links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Nav background on scroll
+        const nav = document.getElementById('nav');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 40);
+        }, { passive: true });
+
+        // Particle canvas (lightweight, CSS-friendly)
+        (function() {
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d');
+            let w, h, particles;
+
+            function resize() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                w = canvas.width = rect.width;
+                h = canvas.height = rect.height;
+            }
+
+            function init() {
+                resize();
+                const count = Math.min(Math.floor(w * h / 18000), 80);
+                particles = [];
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        r: Math.random() * 1.2 + 0.3,
+                        dx: (Math.random() - 0.5) * 0.3,
+                        dy: (Math.random() - 0.5) * 0.15 - 0.1,
+                        o: Math.random() * 0.4 + 0.1
+                    });
                 }
-            });
-        });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+                for (const p of particles) {
+                    p.x += p.dx;
+                    p.y += p.dy;
+                    if (p.x < 0) p.x = w;
+                    if (p.x > w) p.x = 0;
+                    if (p.y < 0) p.y = h;
+                    if (p.y > h) p.y = 0;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(34, 211, 238, ${p.o})`;
+                    ctx.fill();
+                }
+                requestAnimationFrame(draw);
+            }
+
+            init();
+            draw();
+            window.addEventListener('resize', () => { resize(); init(); });
+        })();
     </script>
 </body>
 </html>
